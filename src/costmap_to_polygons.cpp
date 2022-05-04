@@ -121,7 +121,7 @@ CostmapToPolygonsDBSMCCH::~CostmapToPolygonsDBSMCCH()
 void CostmapToPolygonsDBSMCCH::initialize(ros::NodeHandle nh)
 {
     costmap_ = NULL;
-   
+
     nh.param("cluster_max_distance", parameter_.max_distance_, 0.4);
     nh.param("cluster_min_pts", parameter_.min_pts_, 2);
     nh.param("cluster_max_pts", parameter_.max_pts_, 30);

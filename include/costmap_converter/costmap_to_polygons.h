@@ -128,6 +128,7 @@ class CostmapToPolygonsDBSMCCH : public BaseCostmapToPolygons
     /**
      * @brief Initialize the plugin
      * @param nh Nodehandle that defines the namespace for parameters
+     * @warning Always call base class method
      */
     virtual void initialize(ros::NodeHandle nh);
     
