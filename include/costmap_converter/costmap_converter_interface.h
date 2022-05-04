@@ -47,6 +47,7 @@
 #include <costmap_2d/costmap_2d_ros.h>
 #include <geometry_msgs/Polygon.h>
 #include <costmap_converter/ObstacleArrayMsg.h>
+#include <costmap_converter/visualization.h>
 
 
 namespace costmap_converter
@@ -112,6 +113,21 @@ public:
      * @brief This method performs the actual work (conversion of the costmap to polygons)
      */
     virtual void compute() = 0;
+
+    /**
+     * @brief Publishes obstacles as markers
+     * @note Method cannot be marked virtual without implementation in derived classes
+     */
+    void visualize()
+    {
+      auto obs = getObstacles();
+      // visualize if detected (not nullptr) and required (someone subscribes)
+      if (!obs || pub_vis_.getNumSubscribers() == 0)
+      {
+        return;
+      }
+      publishAsMarker(frame_id_, *obs, pub_vis_);
+    }
     
     /**
      * @brief Get a shared instance of the current polygon container
@@ -226,8 +242,16 @@ protected:
     /**
      * @brief Protected constructor that should be called by subclasses
      */
-    BaseCostmapToPolygons() : nh_("~costmap_to_polygons"), spin_thread_(NULL), need_to_terminate_(false) {}
-    
+    BaseCostmapToPolygons() :
+      frame_id_("odom"),
+      nh_("~costmap_to_polygons"),
+      spin_thread_(NULL),
+      need_to_terminate_(false)
+    {
+      nh_.param("frame_id", frame_id_, frame_id_);
+      pub_vis_ = nh_.advertise<visualization_msgs::Marker>("costmap_polygon_markers", 10);
+    }
+
     /**
      * @brief Blocking method that checks for new timer events (active if startWorker() is called with spin_thread enabled) 
      */
@@ -251,8 +275,13 @@ protected:
     {
       updateCostmap2D();
       compute();
+      visualize();
     }
-    
+
+protected:
+  ros::Publisher pub_vis_;
+  std::string frame_id_;
+
 private:
   ros::Timer worker_timer_;
   ros::NodeHandle nh_;
