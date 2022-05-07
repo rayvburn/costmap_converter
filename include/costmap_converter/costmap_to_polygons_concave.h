@@ -112,8 +112,6 @@ class CostmapToPolygonsDBSConcaveHull : public CostmapToPolygonsDBSMCCH
                                const Point2& current_line_end, const Point3& test_line_start, const Point4& test_line_end);
     
     double concave_hull_depth_;
-
-  private:
        
     /**
      * @brief Callback for the dynamic_reconfigure node.
