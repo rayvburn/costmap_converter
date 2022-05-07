@@ -108,6 +108,7 @@ generate_dynamic_reconfigure_options(
   cfg/dynamic_reconfigure/CostmapToLinesDBSMCCH.cfg
   cfg/dynamic_reconfigure/CostmapToLinesDBSRANSAC.cfg
   cfg/dynamic_reconfigure/CostmapToDynamicObstacles.cfg
+  cfg/dynamic_reconfigure/CostmapToSegmentedObjects.cfg
 )
 
 ###################################
@@ -151,6 +152,7 @@ add_library(costmap_converter   src/costmap_to_polygons.cpp
                                 src/costmap_to_polygons_concave.cpp
                                 src/costmap_to_lines_convex_hull.cpp
                                 src/costmap_to_lines_ransac.cpp
+                                src/costmap_to_segmented_objects.cpp
                                 src/costmap_to_dynamic_obstacles/costmap_to_dynamic_obstacles.cpp
                                 src/costmap_to_dynamic_obstacles/background_subtractor.cpp
                                 src/costmap_to_dynamic_obstacles/blob_detector.cpp
