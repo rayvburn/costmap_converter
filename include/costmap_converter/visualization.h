@@ -11,6 +11,9 @@
 
 namespace costmap_converter {
 
+static constexpr auto LINE_ENLARGEMENT = 0.01;
+static constexpr auto SAME_POINT_DIST_THRESHOLD = 1e-03;
+
 static void publishAsMarker(const std::string& frame_id, const std::vector<geometry_msgs::PolygonStamped>& polygonStamped, ros::Publisher& marker_pub)
 {
   visualization_msgs::Marker line_list;
@@ -55,8 +58,26 @@ static void publishAsMarker(const std::string& frame_id, const std::vector<geome
         line_list.points.push_back(line_end);
       }
     }
+    else if (polygonStamped[i].polygon.points.size() != 2)
+    {
+      // fallback for obstacle created from 2 points with (almost) the same coordinates
+      // artificially enlarge the obstacle so it's visible with line list;
+      // check if these points are the same
+      double len = std::hypot(
+        polygonStamped[i].polygon.points.back().x - polygonStamped[i].polygon.points.front().x,
+        polygonStamped[i].polygon.points.back().y - polygonStamped[i].polygon.points.front().y
+      );
 
-
+      // check if these are the same points (based on distance)
+      if (len < SAME_POINT_DIST_THRESHOLD)
+      {
+        // move second to last and last points
+        line_list.points.end()[-2].x += LINE_ENLARGEMENT;
+        line_list.points.end()[-2].y += LINE_ENLARGEMENT;
+        line_list.points.end()[-1].x -= LINE_ENLARGEMENT;
+        line_list.points.end()[-1].y -= LINE_ENLARGEMENT;
+      }
+    }
   }
   marker_pub.publish(line_list);
 }
@@ -103,6 +124,26 @@ static void publishAsMarker(const std::string& frame_id, const costmap_converter
         line_end.x = obstacle.polygon.points.front().x;
         line_end.y = obstacle.polygon.points.front().y;
         line_list.points.push_back(line_end);
+      }
+    }
+    else if (obstacle.polygon.points.size() == 2)
+    {
+      // fallback for obstacle created from 2 points with (almost) the same coordinates
+      // artificially enlarge the obstacle so it's visible with line list;
+      // check if these points are the same
+      double len = std::hypot(
+        obstacle.polygon.points.back().x - obstacle.polygon.points.front().x,
+        obstacle.polygon.points.back().y - obstacle.polygon.points.front().y
+      );
+
+      // check if these are the same points (based on distance)
+      if (len < SAME_POINT_DIST_THRESHOLD)
+      {
+        // move second to last and last points
+        line_list.points.end()[-2].x += LINE_ENLARGEMENT;
+        line_list.points.end()[-2].y += LINE_ENLARGEMENT;
+        line_list.points.end()[-1].x -= LINE_ENLARGEMENT;
+        line_list.points.end()[-1].y -= LINE_ENLARGEMENT;
       }
     }
   }
