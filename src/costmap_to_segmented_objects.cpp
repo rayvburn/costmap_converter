@@ -7,6 +7,44 @@ PLUGINLIB_EXPORT_CLASS(costmap_converter::CostmapToSegmentedObjects, costmap_con
 namespace costmap_converter
 {
 
+// Helper class that stores copy of the polygon with its ID
+class PolygonIdentified {
+public:
+  PolygonIdentified(const geometry_msgs::Polygon& polygon):
+    polygon_(polygon),
+    id_(polygon_num_++)
+  {
+  }
+
+  geometry_msgs::Polygon getPolygon() const {
+    return polygon_;
+  }
+
+  size_t getID() const {
+    return id_;
+  }
+
+  static size_t getPolygonsNum() {
+    return polygon_num_;
+  }
+
+  /// Needs to be called at the start of each processing
+  static void resetPolygonsNum() {
+    polygon_num_ = 0;
+  }
+
+protected:
+  const geometry_msgs::Polygon polygon_;
+  size_t id_;
+
+private:
+  static size_t polygon_num_;
+};
+
+// outside class initialization of the static member
+size_t PolygonIdentified::polygon_num_ = 0;
+
+
 CostmapToSegmentedObjects::CostmapToSegmentedObjects():
   CostmapToPolygonsDBSMCCH::CostmapToPolygonsDBSMCCH(),
   dynamic_recfg_so_(nullptr) {
@@ -40,26 +78,32 @@ void CostmapToSegmentedObjects::compute() {
   // stores indices of pairs that can be glued together
   std::vector<std::pair<size_t, size_t>> extension_pairs;
 
-  auto polygons = *getPolygons();
-  size_t polygons_num_init = polygons.size();
+  // let polygon IDs be counted from 0
+  PolygonIdentified::resetPolygonsNum();
 
-  size_t id_set_a = 0;
-  size_t id_set_b = 0;
+  // storage for polygons (initial set)
+  std::vector<PolygonIdentified> polygons;
+  auto polygons_input = *getPolygons();
+  for (auto polygon : polygons_input) {
+    polygons.push_back(polygon);
+  }
 
   // 1st stage
   // this loop finds pairs of polygons whose closest vertices are close enough (below the threshold)
   for (const auto& polygon_a: polygons) {
-    // first indices will be equal to 1 (not 0 - to simplify operations if loop is skipped)
-    id_set_a++;
     for (const auto& polygon_b: polygons) {
-      id_set_b++;
+      // check if looking at self
+      if (polygon_a.getID() == polygon_b.getID()) {
+        continue;
+      }
 
-      // check if polygon pair was visited before
+      // check if polygon pair was visited before (order of occurrence is not important)
       auto it_visited = std::find_if(
         visited_pairs.begin(),
         visited_pairs.end(),
-        [&id_set_a, &id_set_b](const std::pair<size_t, size_t>& element) {
-          return element.first == id_set_a && element.second == id_set_b;
+        [&polygon_a, &polygon_b](const std::pair<size_t, size_t>& element) {
+          return element.first == polygon_a.getID() && element.second == polygon_b.getID()
+            || element.first == polygon_b.getID() && element.second == polygon_a.getID();
         }
       );
 
@@ -68,16 +112,23 @@ void CostmapToSegmentedObjects::compute() {
         continue;
       }
 
-      visited_pairs.push_back(std::make_pair(id_set_a, id_set_b));
+      visited_pairs.push_back(std::make_pair(polygon_a.getID(), polygon_b.getID()));
 
+      // flag that allows to abort further investigation for a given pair if pts close enough were already found
+      bool found_extension_pair = false;
       // check each pair of points
-      for (const auto& pt_a: polygon_a.points) {
-        for (const auto& pt_b: polygon_b.points) {
+      for (const auto& pt_a: polygon_a.getPolygon().points) {
+        for (const auto& pt_b: polygon_b.getPolygon().points) {
           auto dist = std::hypot(pt_b.x - pt_a.x, pt_b.y - pt_a.y);
           if (dist <= parameter_so_.segmentation_distance_) {
-            extension_pairs.push_back(std::make_pair(id_set_a, id_set_b));
-            continue;
+            extension_pairs.push_back(std::make_pair(polygon_a.getID(), polygon_b.getID()));
+            found_extension_pair = true;
+            break;
           }
+        }
+        if (found_extension_pair)
+        {
+          break;
         }
       }
     }
@@ -131,7 +182,7 @@ void CostmapToSegmentedObjects::compute() {
 
   // 3rd stage
   // create groups with all polygons (also single ones)
-  for (size_t id = 1; id <= polygons_num_init; id++) {
+  for (size_t id = 0; id < PolygonIdentified::getPolygonsNum(); id++) {
     // check if group with `id` exists
     auto it_group_with_id = std::find_if(
       polygon_groups.begin(),
@@ -161,12 +212,14 @@ void CostmapToSegmentedObjects::compute() {
     for (const auto& id: group.second) {
       // iterate over polygon's vertices
       // compensate index offset introduced in the 1st stage
-      for (const auto& vertex: polygons.at(id - 1).points) {
+      for (const auto& vertex: polygons.at(id).getPolygon().points) {
         tp.points.push_back(vertex);
       }
     }
     polygons_segmented->push_back(tp);
   }
+
+  // NOTE: at this point we ended up with polygons that may contain excessive points are may not be convex hulls
 
   // update existing polygons set with the newly created one
   boost::mutex::scoped_lock lock(mutex_);
