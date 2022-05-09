@@ -35,4 +35,10 @@
   </description>
   </class>
   
+  <class type="costmap_converter::CostmapToSegmentedObjects" base_class_type="costmap_converter::BaseCostmapToPolygons">
+  <description>
+      This class converts costmap2d obstacles into a vector of polygons.
+  </description>
+  </class>
+  
 </library>

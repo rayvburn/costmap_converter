@@ -1,6 +1,8 @@
 #include <costmap_converter/costmap_to_segmented_objects.h>
-
+#include <pluginlib/class_list_macros.h>
 #include <utility>
+
+PLUGINLIB_EXPORT_CLASS(costmap_converter::CostmapToSegmentedObjects, costmap_converter::BaseCostmapToPolygons)
 
 namespace costmap_converter
 {
