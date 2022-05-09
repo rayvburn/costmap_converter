@@ -54,6 +54,7 @@ class CostmapToSegmentedObjects : public CostmapToPolygonsDBSMCCH {
   protected:
     Parameters parameter_so_;          //< active parameters throughout computation
     Parameters parameter_so_buffered_; //< the buffered parameters that are offered to dynamic reconfigure
+    boost::mutex parameter_so_mutex_;  //!< Mutex that keeps track about the ownership of the segmented objects params
 
     /**
      * @brief Callback for the dynamic_reconfigure node.

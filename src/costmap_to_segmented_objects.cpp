@@ -173,7 +173,8 @@ void CostmapToSegmentedObjects::compute() {
 
 void CostmapToSegmentedObjects::updateCostmap2D() {
   // get a copy of our parameters from dynamic reconfigure
-  boost::mutex::scoped_lock lock(parameter_mutex_);
+  // `parameter_mutex_` cannot be used here
+  boost::mutex::scoped_lock lock(parameter_so_mutex_);
   parameter_so_ = parameter_so_buffered_;
 
   CostmapToPolygonsDBSMCCH::updateCostmap2D();
