@@ -130,6 +130,16 @@ public:
     }
     
     /**
+     * @brief Returns true if obstacles were updated since last @ref isUpdated call
+     */
+    bool isUpdated() const {
+      boost::mutex::scoped_lock update_lock(update_mutex_);
+      bool updated_flag = updated_;
+      updated_ = false;
+      return updated_flag;
+    }
+    
+    /**
      * @brief Get a shared instance of the current polygon container
      *
      * If this method is not implemented by any subclass (plugin) the returned shared
@@ -276,11 +286,16 @@ protected:
       updateCostmap2D();
       compute();
       visualize();
+      updated_ = true;
     }
 
 protected:
   ros::Publisher pub_vis_;
   std::string frame_id_;
+
+  mutable boost::mutex update_mutex_;
+  /// Set to true when obstacle container gets updated (at the end of @ref workerCallback)
+  mutable bool updated_;
 
 private:
   ros::Timer worker_timer_;
