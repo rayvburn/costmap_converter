@@ -136,9 +136,7 @@ public:
 
       obstacle_pub_.publish(obstacles);
 
-      frame_id_ = msg->header.frame_id;
-
-      publishAsMarker(frame_id_, *obstacles, marker_pub_);
+      publishAsMarker(msg->header.frame_id, *obstacles, marker_pub_);
   }
 
   void costmapUpdateCallback(const map_msgs::OccupancyGridUpdateConstPtr& update)
@@ -163,7 +161,7 @@ public:
 
     obstacle_pub_.publish(obstacles);
 
-    publishAsMarker(frame_id_, *obstacles, marker_pub_);
+    publishAsMarker(update->header.frame_id, *obstacles, marker_pub_);
   }
 
 
@@ -178,7 +176,6 @@ private:
   ros::Publisher obstacle_pub_;
   ros::Publisher marker_pub_;
 
-  std::string frame_id_;
   int occupied_min_value_;
 
   costmap_2d::Costmap2D map_;
