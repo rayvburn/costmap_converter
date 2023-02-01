@@ -308,9 +308,8 @@ class CostmapToPolygonsDBSMCCH : public BaseCostmapToPolygons
     Parameters parameter_;          //< active parameters throughout computation
     Parameters parameter_buffered_; //< the buffered parameters that are offered to dynamic reconfigure
     boost::mutex parameter_mutex_;  //!< Mutex that keeps track about the ownership of the shared polygon instance
-   
-  private:
-       
+
+
     /**
      * @brief Callback for the dynamic_reconfigure node.
      * 
@@ -319,8 +318,7 @@ class CostmapToPolygonsDBSMCCH : public BaseCostmapToPolygons
      * @param level Dynamic reconfigure level
      */
     void reconfigureCB(CostmapToPolygonsDBSMCCHConfig& config, uint32_t level);
-    
-    
+
     PolygonContainerPtr polygons_; //!< Current shared container of polygons
     boost::mutex mutex_; //!< Mutex that keeps track about the ownership of the shared polygon instance
     

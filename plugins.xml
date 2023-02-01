@@ -35,4 +35,32 @@
   </description>
   </class>
   
+  <class type="costmap_converter::CostmapToSegmentedPolygonsDBSMCCH" base_class_type="costmap_converter::BaseCostmapToPolygons">
+  <description>
+      This class inherits from CostmapToPolygonsDBSMCCH and combines polygons produced by the base class.
+      Objects are glued together as long as a distance between any of their vertices is shorter than the distance threshold.
+  </description>
+  </class>
+
+  <class type="costmap_converter::CostmapToSegmentedPolygonsDBSConcaveHull" base_class_type="costmap_converter::BaseCostmapToPolygons">
+  <description>
+      This class inherits from CostmapToPolygonsDBSConcaveHull and combines polygons produced by the base class.
+      Objects are glued together as long as a distance between any of their vertices is shorter than the distance threshold.
+  </description>
+  </class>
+
+  <class type="costmap_converter::CostmapToSegmentedLinesDBSRANSAC" base_class_type="costmap_converter::BaseCostmapToPolygons">
+  <description>
+      This class inherits from CostmapToLinesDBSRANSAC and lines polygons produced by the base class.
+      Objects are glued together as long as a distance between any of their vertices is shorter than the distance threshold.
+  </description>
+  </class>
+
+  <class type="costmap_converter::CostmapToSegmentedLinesDBSMCCH" base_class_type="costmap_converter::BaseCostmapToPolygons">
+  <description>
+      This class inherits from CostmapToLinesDBSMCCH and combines lines produced by the base class.
+      Objects are glued together as long as a distance between any of their vertices is shorter than the distance threshold.
+  </description>
+  </class>
+  
 </library>

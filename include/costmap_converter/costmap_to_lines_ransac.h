@@ -152,8 +152,6 @@ namespace costmap_converter
 //     void adjustLineLength(const std::vector<KeyPoint>& data, const KeyPoint& linept1, const KeyPoint& linept2, 
 //                           KeyPoint& line_start, KeyPoint& line_end);
     
-    private:
-    
     /**
      * @brief Callback for the dynamic_reconfigure node.
      * 
